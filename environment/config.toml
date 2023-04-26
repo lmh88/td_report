@@ -1,0 +1,159 @@
+# HTTP Server
+[server]
+    Address     = ":8081"
+    ServerRoot  = "public"
+    ServerAgent = "gf-app"
+    LogPath     = "D:/goproject/td_report/log"
+    Env         = "dev"
+    IsDivide=1
+    AppKey = "report_node1"
+    S3Upload=false
+
+# Logger.
+[logger]
+    Path        = "D:/goproject/td_report/log"
+    Level       = "all"
+    Stdout      = true
+
+[apollo]
+    AppID="report"
+    Cluster="default"
+    IP="http://apollo.registry-dev.sparkxmarketing.com"
+    NamespaceName="application"
+    IsBackupConfig=false
+    Secret="ca844f9fe6b14849aa5621b463995900"
+    
+[common]
+    datapath ="D:/data/report"
+    uploadpath ="D:/data/temp"
+    noticekey="Sparkxjop529hnd"
+    # 协成数量控制
+    goruntime_sd=10
+    goruntime_sp=10
+    goruntime_sb=10
+    goruntime_dsp=10
+    token_limit=5
+
+[report]
+    # 每次拉取报表的天数数据,针对dsp报表
+    dsp_order_length=15
+    dsp_inventory_length=1
+    dsp_audience_length=2
+    dsp_detail_length=4
+    check_report_maxday=30
+
+[limit]   
+  sp_rate=6
+  sd_rate=6
+  sb_rate=6
+  dsp_rate=8
+
+
+# 队列调度相关 daygap 服务器文件时间相差时间  全部业务阻塞时队列元素长度限制queue_all_full
+# 过去14天队列长度限制queue_full
+[queue]
+    daygap=1
+    queue_all_full=500
+    queue_full=200
+    max_retry = 4
+
+[wechat]
+    key ="55b6fd47-6237-413f-80dc-40eedaa71fdf"
+    open= true
+
+[redis]
+    host="192.168.161.129:6379"
+    password="UOCk68SDQTOXNPsW"
+    database = 0
+    pool_size =500
+    min_idle_conns =5
+    idle_timeout=20
+    tls=0
+
+[redis_common]
+    host="192.168.161.129:6379"
+    password="UOCk68SDQTOXNPsW"
+    database = 0
+    pool_size =50
+    min_idle_conns =5
+    idle_timeout=20
+    tls=0
+
+[rabbitmq]
+  address="amqps://guest:guest@127.0.0.1:5672"
+
+[s3]
+  bucket="xray-xplatform-data"
+  #key="AKIATATYTIC4EFB3HWHB"
+  key="AKIATATYTIC4PIEOJYA4"
+  #secret="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"
+  secret="xUhHh9w19IAcGpFVUkSn+rBHKt7LRLwFTlxPTXjy"
+  regin="ap-east-1"
+
+[sqs]
+  key="AKIATATYTIC4EFB3HWHB"
+  secret="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"
+  regin="us-east-1"
+  consumer_num=6
+
+[sqs.goroutine]
+    sp-traffic=10
+    sp-conversion=1
+    budget-usage=1
+
+[kafka]
+  #url="161.189.223.231:39333"
+  #url="172.12.4.138 39333"
+  #10.0.0.52:49153
+  url="16.162.166.79:49153"
+
+# Template.
+[viewer]
+    Path        = "template"
+    DefaultFile = "index.html"
+    Delimiters  =  ["{{", "}}"]
+
+# Database.
+[database]
+
+    [[database.default]]
+        link   = "mysql:devops:SparkX2021,.//.@tcp(16.162.166.79:3306)/td_xplatform"
+    [[database.td_xplatform]]
+        link   = "mysql:devops:SparkX2021,.//.@tcp(16.162.166.79:3306)/td_xplatform"
+        debug  = true
+        group  = "td_xplatform"
+        Path   = "D:/goproject/td_report/log"
+        Level  = "all"
+        Stdout = true
+    [[database.xray_report]]
+        link = "mysql:devops:SparkX2021,.//.@tcp(16.162.166.79:3306)/xray_report"
+        debug = true
+        group = "xray_report"
+        Path  = "D:/goproject/td_report/log"
+        Level  = "all"
+        Stdout = true
+    [[database.report]]
+        link = "mysql:devops:SparkX2021,.//.@tcp(16.162.166.79:3306)/report"
+        debug = true
+        group = "report"
+        Path  = "D:/goproject/td_report/log"
+        Level  = "all"
+        Stdout = true
+
+[gfcli]
+    [[gfcli.gen.dao]]
+        link = "mysql:devops:SparkX2021,.//.@tcp(16.162.166.79:3306)/xray_report"
+        group= "xray_report"
+
+[consumer_quantity]
+    sp = 10
+    sb = 10
+    sd = 10
+[limit_queue.retry]
+    sb = 200
+    sp = 200
+    sd = 200
+[limit_queue.report]
+    sb = 2000
+    sp = 2000
+    sd = 2000

@@ -1,0 +1,158 @@
+# HTTP Server
+[server]
+    Address     = ":8081"
+    ServerRoot  = "public"
+    ServerAgent = "gf-app"
+    LogPath     = "/data/logs/td_report"
+    Env         = "prod"
+    IsDivide =1
+    AppKey ="report_node1"
+    S3Upload=true
+
+# Logger.
+[logger]
+    Path        = "/data/logs/td_report"
+    Level       = "all"
+    Stdout      = true
+
+[apollo]
+    AppID="report"
+    Cluster="default"
+    IP="http://apollo.registry-dev.sparkxmarketing.com"
+    NamespaceName="application"
+    IsBackupConfig=false
+    Secret="ca844f9fe6b14849aa5621b463995900"
+    
+[common]
+    datapath ="/data/report"
+    uploadpath ="/temp/report_data"
+    noticekey="Sparkxjop529hnd"
+    goruntime_sd=35
+    goruntime_sp=35
+    goruntime_sb=35
+    goruntime_dsp=28
+    token_limit=5
+
+[report]
+    # 每次拉取报表的天数数据,针对dsp报表
+    dsp_order_length=15
+    dsp_inventory_length=1
+    dsp_audience_length=2
+    dsp_detail_length=4
+    check_report_maxday=30
+
+[limit]   
+  sp_rate=6
+  sd_rate=10
+  sb_rate=6
+  dsp_rate=5
+
+  
+# 队列调度相关 daygap 服务器文件时间相差时间  全部业务阻塞时队列元素长度限制queue_all_full
+# 过去14天队列长度限制queue_full
+[queue]
+    daygap=1
+    queue_all_full=500
+    queue_full=200
+    max_retry = 10
+
+[wechat]
+    key ="55b6fd47-6237-413f-80dc-40eedaa71fdf"
+    open= false
+
+[redis]
+    host = "replica.aws-hk-baobiao-manhong.pmpaye.ape1.cache.amazonaws.com:58110"
+    password = "SparkX2021manhongrds..."
+    database = 0
+    pool_size =100
+    min_idle_conns =5
+    idle_timeout=20
+    tls=1
+
+[redis_common]
+    host = "replica.aws-hk-baobiao-manhong.pmpaye.ape1.cache.amazonaws.com:58110"
+    password = "SparkX2021manhongrds..."
+    database = 0
+    pool_size =20
+    min_idle_conns =5
+    idle_timeout=20
+    tls=1
+
+[rabbitmq]
+  #address="amqp://guest:guest@127.0.0.1:5672"
+  address="amqps://root:9j54ed775ikg3a24wr@b-faa2e3e2-0e92-47d4-95d2-b8e489af00e0.mq.ap-east-1.amazonaws.com:5671"
+
+[s3]
+  bucket="xray-xplatform-data"
+  #key="AKIATATYTIC4EFB3HWHB"
+  #secret="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"
+  key="AKIATATYTIC4PIEOJYA4"
+  secret="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"
+  regin="ap-east-1"
+
+[sqs]
+  key="AKIATATYTIC4EFB3HWHB"
+  secret="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"
+  regin="us-east-1"
+  consumer_num=6
+
+[sqs.goroutine]
+sp-traffic=10
+sp-conversion=1
+budget-usage=1
+
+[kafka]
+  #url="161.189.223.231:39333"
+  #url="172.12.4.138 39333"
+  #10.0.0.52:49153
+  url="16.162.166.79:49153"
+
+# Template.
+[viewer]
+    Path        = "template"
+    DefaultFile = "index.html"
+    Delimiters  =  ["{{", "}}"]
+
+# Database.
+[database]
+
+    [[database.default]]
+        link   = "mysql:xplatform_report_job_r:7GjE}03HS{bhe*pTF#zb@tcp(xp-prod-s.cyuaxzmzkcga.ap-east-1.rds.amazonaws.com:60351)/td_xplatform?charset=utf8&parseTime=true&loc=Local"
+    [[database.td_xplatform]]
+        link   = "mysql:xplatform_report_job_r:7GjE}03HS{bhe*pTF#zb@tcp(xp-prod-s.cyuaxzmzkcga.ap-east-1.rds.amazonaws.com:60351)/td_xplatform?charset=utf8&parseTime=true&loc=Local"
+        debug  = false
+        group  = "td_xplatform"
+        Path   = "/data/logs/td_report"
+        Level  = "all"
+        Stdout = false
+    [[database.xray_report]]
+        link = "mysql:xray_report_w:ke*0SG5220x5{gDAkT1Y2u6o@tcp(xp-prod-s.cyuaxzmzkcga.ap-east-1.rds.amazonaws.com:60351)/xray_report?charset=utf8&parseTime=true&loc=Local"
+        debug = false
+        group = "xray_report"
+        Path  = "/data/logs/td_report"
+        Level  = "all"
+        Stdout = false
+    [[database.report]]
+        link = "mysql:devops:qaz123!#@tcp(18.167.99.158:13306)/report"
+        debug = false
+        group = "report"
+        Path  = "/data/logs/app/td_report"
+        Level  = "all"
+        Stdout = false
+[gfcli]
+    [[gfcli.gen.dao]]
+        link = "mysql:xray_report_w:ke*0SG5220x5{gDAkT1Y2u6o@tcp(xp-prod-s.cyuaxzmzkcga.ap-east-1.rds.amazonaws.com:60351)/xray_report?charset=utf8&parseTime=true&loc=Local"
+        group= "xray_report"
+
+[consumer_quantity]
+    sp = 20
+    sb = 20
+    sd = 20
+[limit_queue.retry]
+    sb = 200
+    sp = 200
+    sd = 200
+[limit_queue.report]
+    sb = 2000
+    sp = 2000
+    sp = 2000

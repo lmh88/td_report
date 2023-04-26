@@ -1,0 +1,169 @@
+package redis
+
+import (
+	"crypto/tls"
+	"fmt"
+	rediS "github.com/go-redis/redis"
+	"github.com/gogf/gf/frame/g"
+	"td_report/pkg/logger"
+	"time"
+)
+
+var (
+	Client *rediS.Client
+	Nil    = rediS.Nil
+)
+
+func init() {
+	options := &rediS.Options{
+		Addr:         g.Cfg().GetString("redis.host"),
+		Password:     g.Cfg().GetString("redis.password"),
+		DB:           g.Cfg().GetInt("redis.database"),
+		PoolSize:     g.Cfg().GetInt("redis.pool_size"),
+		MinIdleConns: g.Cfg().GetInt("redis.min_idle_conns"),
+		IdleTimeout:  time.Duration(g.Cfg().GetInt("redis.idle_timeout")) * time.Second,
+	}
+
+	if g.Cfg().GetInt("redis.tls") == 1 {
+		options.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+	}
+
+	Client = rediS.NewClient(options)
+
+	_, err := Client.Ping().Result()
+	if err != nil {
+		logger.Logger.Error(map[string]interface{}{
+			"flag": "redis init",
+			"err":  err.Error(),
+		})
+	}
+}
+
+func WithBasePrefix(key string) string {
+	return fmt.Sprintf("dp:%s", key)
+}
+
+func WithSyncLockPrefix(key string) string {
+	return WithBasePrefix(fmt.Sprintf("sl:%s", key))
+}
+
+func WithAccessTokenPrefix(key string) string {
+	return WithBasePrefix(fmt.Sprintf("at:%s", key))
+}
+
+func WithProfileTokenKey() string {
+	return WithBasePrefix("pt:key")
+}
+
+func WithDspRegionProfile() string {
+	return WithBasePrefix("drp:key")
+}
+
+// WithDSPReportTaskQueue 废弃掉，用批次号来通知，具体的都做完了就通知避免等待3个小时
+func WithDSPReportTaskQueue() string {
+	return "rtq:key"
+}
+
+// WithDspBatch 批次号通知模式，动态通知
+func WithDspBatch() string {
+	return "dp:uid:batch"
+}
+
+// WithBrandMetrics 获取品牌数据
+func WithBrandMetrics() string {
+	return "dp:brand:metrics"
+}
+
+func WithBrandMetricsKeys() string {
+	return "dp:brand:metrics:keys"
+}
+
+func WithNoticeDumperCountPrefix(key string) string {
+	return WithBasePrefix(fmt.Sprintf("ndc:%s", key))
+}
+
+func SyncLock(fileName string) bool {
+	ok, err := Client.SetNX(WithSyncLockPrefix(fileName), fileName, 3*time.Minute).Result()
+	if err != nil {
+		logger.Logger.Error(map[string]interface{}{
+			"flag": "SyncLock error",
+			"err":  err.Error(),
+		})
+
+		return false
+	}
+
+	return ok
+}
+
+func SyncUnlock(fileName string) {
+	err := Client.Del(WithSyncLockPrefix(fileName)).Err()
+	if err != nil {
+		logger.Logger.Error(map[string]interface{}{
+			"flag":     "SyncUnlock error",
+			"err":      err.Error(),
+			"fileName": fileName,
+		})
+	}
+}
+
+//func SyncRedisLock(fileName string, ttls time.Duration) bool {
+//	key := WithSyncLockPrefix(fileName)
+//	client := redis.NewClient(&redis.Options{
+//		Addr:         config.CfgInstance.Redis.Addr,
+//		Password:     config.CfgInstance.Redis.Password,
+//		DB:           config.CfgInstance.Redis.DB,
+//		PoolSize:     config.CfgInstance.Redis.PoolSize,
+//		MinIdleConns: config.CfgInstance.Redis.MinIdleConns,
+//		IdleTimeout:  time.Duration(config.CfgInstance.Redis.IdleTimeout) * time.Second,
+//	})
+//
+//	defer client.Close()
+//
+//	// Create a new lock client.
+//	locker := redislock.New(client)
+//	ctx := context.Background()
+//	lock, err := locker.Obtain(ctx, key, ttls, nil)
+//	if err == redislock.ErrNotObtained {
+//		logger.Info.Json(map[string]interface{}{
+//			"flag":     "Could not obtain lock!",
+//			"fileName": fileName,
+//		})
+//
+//		return false
+//	} else if err != nil {
+//		logger.Error.Json(map[string]interface{}{
+//			"flag":     "get lock error !",
+//			"fileName": fileName,
+//		})
+//		return false
+//	}
+//
+//	defer lock.Release(ctx)
+//	time.Sleep(50 * time.Millisecond)
+//	if ttl, err := lock.TTL(ctx); err != nil {
+//		logger.Error.Json(map[string]interface{}{
+//			"flag":     "get lock  ttl error !",
+//			"fileName": fileName,
+//		})
+//		return false
+//	} else if ttl > 0 {
+//		fmt.Println("Yay, I still have my lock!")
+//	}
+//
+//	//// Extend my lock.
+//	//if err := lock.Refresh(ctx, 100*time.Millisecond, nil); err != nil {
+//	//	log.Fatalln(err)
+//	//	return false
+//	//}
+//
+//	// Sleep a little longer, then check.
+//	time.Sleep(100 * time.Millisecond)
+//	if ttl, err := lock.TTL(ctx); err != nil {
+//		log.Fatalln(err)
+//		return false
+//	} else if ttl == 0 {
+//		return true
+//	}
+//	return true
+//}
